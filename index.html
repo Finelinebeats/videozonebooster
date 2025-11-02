@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background: #0f0f0f;
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #2d3746;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            background: linear-gradient(90deg, #4cc9f0, #4361ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        
+        .subtitle {
+            color: #a0aec0;
+            font-size: 16px;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+        
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2d3746;
+        }
+        
+        .card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2d3746;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2d3746;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat {
+            text-align: center;
+            padding: 15px;
+            background: #16213e;
+            border-radius: 8px;
+            border: 1px solid #2d3746;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #4cc9f0;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #a0aec0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4ade80, #16a34a);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f87171, #dc2626);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .progress-container {
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #2d3746;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4cc9f0, #4361ee);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .video-item {
+            background: #16213e;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #2d3746;
+            transition: transform 0.3s ease;
+        }
+        
+        .video-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .video-thumb {
+            width: 100%;
+            height: 120px;
+            background: #0f0f0f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0aec0;
+            font-size: 14px;
+        }
+        
+        .video-info {
+            padding: 10px;
+            font-size: 12px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-active {
+            background: #4ade80;
+        }
+        
+        .status-inactive {
+            background: #f87171;
+        }
+        
+        .status-warning {
+            background: #f59e0b;
+        }
+        
+        .risk-meter {
+            height: 10px;
+            background: #2d3746;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .risk-level {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #f59e0b, #f87171);
+            width: 20%;
+            transition: width 0.5s ease;
+        }
+        
+        .risk-marker {
+            position: absolute;
+            top: -2px;
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .log-container {
+            background: #0f0f0f;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        
+        .log-info {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3b82f6;
+        }
+        
+        .log-success {
+            background: rgba(34, 197, 94, 0.1);
+            border-left: 3px solid #22c55e;
+        }
+        
+        .log-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 3px solid #f59e0b;
+        }
+        
+        .log-error {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid #ef4444;
+        }
+        
+        .stealth-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(76, 201, 240, 0.1);
+            border-radius: 6px;
+            border: 1px solid rgba(76, 201, 240, 0.3);
+        }
+        
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Media Analytics Dashboard</h1>
+            <p class="subtitle">Content consumption analysis and engagement tracking</p>
+        </header>
+        
+        <div class="dashboard">
+            <div class="main-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">System Controls</div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <div class="stat-value" id="totalVideos">389</div>
+                            <div class="stat-label">Total Videos</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="activePlayers">0</div>
+                            <div class="stat-label">Active Players</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="sessionTime">00:00</div>
+                            <div class="stat-label">Session Time</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="riskLevel">LOW</div>
+                            <div class="stat-label">Risk Level</div>
+                        </div>
+                    </div>
+                    
+                    <div class="controls">
+                        <button class="btn btn-primary" id="btnStart">
+                            <span>▶️</span> Start Session
+                        </button>
+                        <button class="btn btn-success" id="btnAuto">
+                            <span>🔄</span> Auto Mode
+                        </button>
+                        <button class="btn btn-warning" id="btnStealth">
+                            <span>🕵️</span> Stealth Mode
+                        </button>
+                        <button class="btn btn-danger" id="btnStop">
+                            <span>⏹️</span> Stop All
+                        </button>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress" id="sessionProgress"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px;">
+                            <span>Session Progress</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Security Status</div>
+                    </div>
+                    
+                    <div class="stealth-indicator">
+                        <div>
+                            <span class="status-indicator status-active"></span>
+                            <span>Stealth System: <strong id="stealthStatus">ACTIVE</strong></span>
+                        </div>
+                        <div id="stealthDetails">Fingerprint Spoofing • Behavior Masking • Traffic Randomization</div>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>Detection Risk</span>
+                            <span id="riskValue">15%</span>
+                        </div>
+                        <div class="risk-meter">
+                            <div class="risk-level" id="riskLevelBar"></div>
+                            <div class="risk-marker" id="riskMarker"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #a0aec0;">
+                            <span>Low</span>
+                            <span>Medium</span>
+                            <span>High</span>
+                        </div>
+                    </div>
+                    
+                    <div class="log-container">
+                        <div class="log-entry log-info">[INFO] System initialized successfully</div>
+                        <div class="log-entry log-success">[SUCCESS] Stealth protocols activated</div>
+                        <div class="log-entry log-info">[INFO] Fingerprint randomization complete</div>
+                        <div class="log-entry log-warning">[WARNING] Monitoring network traffic patterns</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Active Videos</div>
+                    </div>
+                    
+                    <div class="video-grid" id="videoGrid">
+                        <!-- Video items will be dynamically added here -->
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Performance Metrics</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>CPU Usage</span>
+                            <span id="cpuUsage">12%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 12%; background: #4cc9f0;"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>Memory Usage</span>
+                            <span id="memoryUsage">34%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 34%; background: #4361ee;"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>Network Activity</span>
+                            <span id="networkUsage">28%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 28%; background: #3a0ca3;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== KONFIGURÁCIÓ ==========
+        const SECURITY_CONFIG = {
+            BATCH_SIZE: { MIN: 5, MAX: 15 },
+            TIMING: {
+                SESSION_DURATION: { MIN: 180, MAX: 600 }, // 3-10 perc
+                DELAY_BETWEEN_CLICKS: { MIN: 3000, MAX: 10000 }, // 3-10 másodperc
+                RANDOM_ACTIVITY_INTERVAL: { MIN: 30000, MAX: 120000 } // 30-120 másodperc
+            },
+            STEALTH: {
+                FINGERPRINT_SPOOFING: true,
+                BEHAVIOR_MASKING: true,
+                TRAFFIC_RANDOMIZATION: true,
+                DETECTION_EVASION: true
+            }
+        };
+
+        // ========== ALAPVETŐ VÁLTOZÓK ==========
+        let sessionActive = false;
+        let autoMode = false;
+        let stealthMode = true;
+        let currentBatch = [];
+        let activePlayers = 0;
+        let sessionTimer = null;
+        let sessionStartTime = null;
+        let clickInterval = null;
+        let activityInterval = null;
+        let riskLevel = 15;
+        
+        // YouTube videó ID-k (csak példaként, a teljes listát később bővítjük)
+        const videoIds = [
+            "dQw4w9WgXcQ", "jNQXAC9IVRw", "kJQP7kiw5Fk", "fJ9rUzIMcZQ", "9bZkp7q19f0",
+            "L_jWHffIx5E", "CevxZvSJLk8", "kfVsfOSbJY0", "JGwWNGJdvx8", "nfs8NYg7yQM",
+            "OPf0YbXqDm0", "4fndeDfaWCg", "NUsoVlDFqZg", "pRpeEdMmmQ0", "Rb0UmrCXxVA",
+            "Ahha3Cqe_fk", "ZYb_8MM1tGQ", "KQ6zr6kCPj8", "uxpDa-c-4Mc", "HgzGwKwLmgM",
+            "JGwWNGJdvx8", "9bZkp7q19f0", "fJ9rUzIMcZQ", "CevxZvSJLk8", "kfVsfOSbJY0"
+        ];
+
+        // ========== FŐ FUNKCIÓK ==========
+        
+        // Rendszer inicializálása
+        function initializeSystem() {
+            logMessage("System initialized", "info");
+            updateVideoGrid();
+            initializeStealthSystem();
+            updateMetrics();
+            
+            // Automatikus metrikák frissítése
+            setInterval(updateMetrics, 2000);
+            
+            // Véletlenszerű aktivitás szimulálása
+            if (stealthMode) {
+                startRandomActivity();
+            }
+        }
+        
+        // Videó rács frissítése
+        function updateVideoGrid() {
+            const videoGrid = document.getElementById('videoGrid');
+            videoGrid.innerHTML = '';
+            
+            // Aktív videók megjelenítése
+            const activeVideos = currentBatch.length > 0 ? currentBatch : videoIds.slice(0, 8);
+            
+            activeVideos.forEach((videoId, index) => {
+                const videoItem = document.createElement('div');
+                videoItem.className = 'video-item';
+                videoItem.innerHTML = `
+                    <div class="video-thumb">
+                        <div>Video ${index + 1}</div>
+                    </div>
+                    <div class="video-info">
+                        <div>ID: ${videoId.substring(0, 8)}...</div>
+                        <div>Status: <span class="status-indicator ${sessionActive ? 'status-active' : 'status-inactive'}"></span></div>
+                    </div>
+                `;
+                videoGrid.appendChild(videoItem);
+            });
+        }
+        
+        // Biztonsági rendszer inicializálása
+        function initializeStealthSystem() {
+            if (!SECURITY_CONFIG.STEALTH.FINGERPRINT_SPOOFING) return;
+            
+            logMessage("Stealth system activated", "success");
+            
+            // Böngésző ujjlenyomat módosítása
+            spoofFingerprint();
+            
+            // Viselkedés maszkolás
+            if (SECURITY_CONFIG.STEALTH.BEHAVIOR_MASKING) {
+                simulateHumanBehavior();
+            }
+            
+            // Forgalom randomizálás
+            if (SECURITY_CONFIG.STEALTH.TRAFFIC_RANDOMIZATION) {
+                randomizeNetworkTraffic();
+            }
+            
+            document.getElementById('stealthStatus').textContent = 'ACTIVE';
+            document.getElementById('stealthDetails').textContent = 
+                'Fingerprint Spoofing • Behavior Masking • Traffic Randomization';
+        }
+        
+        // Böngésző ujjlenyomat módosítása
+        function spoofFingerprint() {
+            // Canvas fingerprint spoofing
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#f60';
+            ctx.fillRect(125, 1, 62, 20);
+            ctx.fillStyle = '#069';
+            ctx.fillText('Fingerprint protected', 2, 15);
+            
+            // Véletlenszerű zaj hozzáadása
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < imageData.data.length; i += 4) {
+                if (Math.random() > 0.95) {
+                    imageData.data[i] = Math.floor(Math.random() * 255);
+                    imageData.data[i + 1] = Math.floor(Math.random() * 255);
+                    imageData.data[i + 2] = Math.floor(Math.random() * 255);
+                }
+            }
+            ctx.putImageData(imageData, 0, 0);
+            
+            logMessage("Fingerprint spoofing complete", "info");
+        }
+        
+        // Emberi viselkedés szimulálása
+        function simulateHumanBehavior() {
+            // Egérmozgás szimulálása
+            document.addEventListener('mousemove', (e) => {
+                if (Math.random() > 0.98 && sessionActive) {
+                    const randomX = e.clientX + (Math.random() * 100 - 50);
+                    const randomY = e.clientY + (Math.random() * 100 - 50);
+                    
+                    setTimeout(() => {
+                        document.dispatchEvent(new MouseEvent('mousemove', {
+                            clientX: randomX,
+                            clientY: randomY,
+                            bubbles: true
+                        }));
+                    }, Math.random() * 1000);
+                }
+            });
+            
+            // Görgetés szimulálása
+            setInterval(() => {
+                if (sessionActive && Math.random() > 0.7) {
+                    const scrollAmount = Math.random() * 200 - 100;
+                    window.scrollBy(0, scrollAmount);
+                }
+            }, 10000);
+            
+            logMessage("Human behavior simulation active", "info");
+        }
+        
+        // Hálózati forgalom randomizálása
+        function randomizeNetworkTraffic() {
+            // User Agent rotáció
+            const userAgents = [
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0'
+            ];
+            
+            setInterval(() => {
+                if (sessionActive && Math.random() > 0.8) {
+                    try {
+                        Object.defineProperty(navigator, 'userAgent', {
+                            get: () => userAgents[Math.floor(Math.random() * userAgents.length)],
+                            configurable: true
+                        });
+                    } catch (e) {
+                        // Csendes hiba kezelés
+                    }
+                }
+            }, 30000);
+            
+            logMessage("Network traffic randomization active", "info");
+        }
+        
+        // Véletlenszerű aktivitás indítása
+        function startRandomActivity() {
+            activityInterval = setInterval(() => {
+                if (sessionActive) {
+                    // Véletlenszerű kattintások
+                    if (Math.random() > 0.7) {
+                        simulateRandomClick();
+                    }
+                    
+                    // Kockázati szint frissítése
+                    updateRiskLevel();
+                }
+            }, SECURITY_CONFIG.TIMING.RANDOM_ACTIVITY_INTERVAL.MIN + 
+               Math.random() * (SECURITY_CONFIG.TIMING.RANDOM_ACTIVITY_INTERVAL.MAX - SECURITY_CONFIG.TIMING.RANDOM_ACTIVITY_INTERVAL.MIN));
+        }
+        
+        // Véletlenszerű kattintás szimulálása
+        function simulateRandomClick() {
+            const videoItems = document.querySelectorAll('.video-item');
+            if (videoItems.length > 0) {
+                const randomVideo = videoItems[Math.floor(Math.random() * videoItems.length)];
+                
+                // Egér mozgatás
+                const rect = randomVideo.getBoundingClientRect();
+                const x = rect.left + rect.width / 2 + (Math.random() * 40 - 20);
+                const y = rect.top + rect.height / 2 + (Math.random() * 40 - 20);
+                
+                const moveEvent = new MouseEvent('mousemove', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: x,
+                    clientY: y
+                });
+                
+                randomVideo.dispatchEvent(moveEvent);
+                
+                // Kattintás
+                setTimeout(() => {
+                    const clickEvent = new MouseEvent('click', {
+                        view: window,
+                        bubbles: true,
+                        cancelable: true,
+                        clientX: x,
+                        clientY: y,
+                        button: 0
+                    });
+                    
+                    randomVideo.dispatchEvent(clickEvent);
+                    logMessage(`Simulated click on video`, "info");
+                }, 100 + Math.random() * 200);
+            }
+        }
+        
+        // Munkamenet indítása
+        function startSession() {
+            if (sessionActive) return;
+            
+            sessionActive = true;
+            sessionStartTime = new Date();
+            
+            // Véletlenszerű batch kiválasztása
+            const batchSize = SECURITY_CONFIG.BATCH_SIZE.MIN + 
+                Math.floor(Math.random() * (SECURITY_CONFIG.BATCH_SIZE.MAX - SECURITY_CONFIG.BATCH_SIZE.MIN));
+            
+            currentBatch = [];
+            for (let i = 0; i < batchSize; i++) {
+                const randomIndex = Math.floor(Math.random() * videoIds.length);
+                currentBatch.push(videoIds[randomIndex]);
+            }
+            
+            activePlayers = batchSize;
+            
+            // Időzítő indítása
+            const sessionDuration = SECURITY_CONFIG.TIMING.SESSION_DURATION.MIN + 
+                Math.floor(Math.random() * (SECURITY_CONFIG.TIMING.SESSION_DURATION.MAX - SECURITY_CONFIG.TIMING.SESSION_DURATION.MIN));
+            
+            let timeLeft = sessionDuration;
+            updateSessionTimer(timeLeft);
+            
+            sessionTimer = setInterval(() => {
+                timeLeft--;
+                updateSessionTimer(timeLeft);
+                
+                if (timeLeft <= 0) {
+                    endSession();
+                }
+            }, 1000);
+            
+            // Automatikus kattintások indítása
+            if (autoMode) {
+                startAutoClicks();
+            }
+            
+            updateVideoGrid();
+            logMessage(`Session started with ${batchSize} videos`, "success");
+        }
+        
+        // Automatikus kattintások indítása
+        function startAutoClicks() {
+            if (clickInterval) clearInterval(clickInterval);
+            
+            clickInterval = setInterval(() => {
+                if (sessionActive) {
+                    simulateRandomClick();
+                }
+            }, SECURITY_CONFIG.TIMING.DELAY_BETWEEN_CLICKS.MIN + 
+               Math.random() * (SECURITY_CONFIG.TIMING.DELAY_BETWEEN_CLICKS.MAX - SECURITY_CONFIG.TIMING.DELAY_BETWEEN_CLICKS.MIN));
+        }
+        
+        // Munkamenet leállítása
+        function endSession() {
+            sessionActive = false;
+            autoMode = false;
+            
+            if (sessionTimer) {
+                clearInterval(sessionTimer);
+                sessionTimer = null;
+            }
+            
+            if (clickInterval) {
+                clearInterval(clickInterval);
+                clickInterval = null;
+            }
+            
+            activePlayers = 0;
+            updateVideoGrid();
+            updateSessionTimer(0);
+            logMessage("Session ended", "info");
+        }
+        
+        // Összes leállítása
+        function stopAll() {
+            endSession();
+            
+            if (activityInterval) {
+                clearInterval(activityInterval);
+                activityInterval = null;
+            }
+            
+            logMessage("All operations stopped", "warning");
+        }
+        
+        // Automatikus mód váltása
+        function toggleAutoMode() {
+            autoMode = !autoMode;
+            
+            if (autoMode && sessionActive) {
+                startAutoClicks();
+                logMessage("Auto mode activated", "success");
+            } else if (clickInterval) {
+                clearInterval(clickInterval);
+                clickInterval = null;
+                logMessage("Auto mode deactivated", "info");
+            }
+        }
+        
+        // Biztonsági mód váltása
+        function toggleStealthMode() {
+            stealthMode = !stealthMode;
+            
+            if (stealthMode) {
+                initializeStealthSystem();
+                startRandomActivity();
+                logMessage("Stealth mode activated", "success");
+            } else {
+                if (activityInterval) {
+                    clearInterval(activityInterval);
+                    activityInterval = null;
+                }
+                logMessage("Stealth mode deactivated", "warning");
+            }
+        }
+        
+        // Munkamenet idő frissítése
+        function updateSessionTimer(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            document.getElementById('sessionTime').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            
+            // Előrehaladás frissítése
+            if (sessionStartTime) {
+                const sessionDuration = SECURITY_CONFIG.TIMING.SESSION_DURATION.MIN + 
+                    Math.floor(Math.random() * (SECURITY_CONFIG.TIMING.SESSION_DURATION.MAX - SECURITY_CONFIG.TIMING.SESSION_DURATION.MIN));
+                
+                const progress = ((sessionDuration - seconds) / sessionDuration) * 100;
+                document.getElementById('sessionProgress').style.width = `${progress}%`;
+                document.getElementById('progressPercent').textContent = `${Math.round(progress)}%`;
+            }
+        }
+        
+        // Kockázati szint frissítése
+        function updateRiskLevel() {
+            // Véletlenszerű kockázati szint változtatás
+            const change = Math.random() * 10 - 5; // -5 és +5 közötti változás
+            riskLevel = Math.max(5, Math.min(95, riskLevel + change));
+            
+            document.getElementById('riskValue').textContent = `${Math.round(riskLevel)}%`;
+            document.getElementById('riskLevelBar').style.width = `${riskLevel}%`;
+            document.getElementById('riskMarker').style.left = `${riskLevel}%`;
+            
+            // Kockázati szint szöveges formában
+            let riskText = "LOW";
+            if (riskLevel > 60) riskText = "HIGH";
+            else if (riskLevel > 30) riskText = "MEDIUM";
+            
+            document.getElementById('riskLevel').textContent = riskText;
+            
+            // Szín beállítása a kockázati szint szerint
+            const riskElement = document.getElementById('riskLevel');
+            if (riskLevel > 60) {
+                riskElement.style.color = '#f87171';
+            } else if (riskLevel > 30) {
+                riskElement.style.color = '#f59e0b';
+            } else {
+                riskElement.style.color = '#4ade80';
+            }
+        }
+        
+        // Metrikák frissítése
+        function updateMetrics() {
+            document.getElementById('activePlayers').textContent = activePlayers;
+            
+            // CPU és memória használat szimulálása
+            const cpuUsage = 10 + Math.random() * 10 + (sessionActive ? 15 : 0);
+            const memoryUsage = 25 + Math.random() * 15 + (sessionActive ? 10 : 0);
+            const networkUsage = 15 + Math.random() * 15 + (sessionActive ? 20 : 0);
+            
+            document.getElementById('cpuUsage').textContent = `${Math.round(cpuUsage)}%`;
+            document.getElementById('memoryUsage').textContent = `${Math.round(memoryUsage)}%`;
+            document.getElementById('networkUsage').textContent = `${Math.round(networkUsage)}%`;
+        }
+        
+        // Naplóbejegyzés hozzáadása
+        function logMessage(message, type = "info") {
+            const logContainer = document.querySelector('.log-container');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Régebbi bejegyzések törlése
+            const entries = logContainer.querySelectorAll('.log-entry');
+            if (entries.length > 20) {
+                entries[0].remove();
+            }
+        }
+        
+        // ========== ESEMÉNYKEZELŐK ==========
+        document.getElementById('btnStart').addEventListener('click', startSession);
+        document.getElementById('btnAuto').addEventListener('click', toggleAutoMode);
+        document.getElementById('btnStealth').addEventListener('click', toggleStealthMode);
+        document.getElementById('btnStop').addEventListener('click', stopAll);
+        
+        // Rendszer indítása
+        window.addEventListener('load', initializeSystem);
+    </script>
+</body>
+</html>
