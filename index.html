@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Traffic Simulátor - CSV Import</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .import-section {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .import-section h3 {
+            margin-bottom: 15px;
+            color: #fdbb2d;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .file-upload {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .file-input {
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 8px;
+            color: white;
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .csv-preview {
+            margin-top: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .csv-preview table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .csv-preview th, .csv-preview td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .csv-preview th {
+            background: rgba(255,255,255,0.1);
+            color: #fdbb2d;
+        }
+        
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 25px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card h3 {
+            margin-bottom: 15px;
+            color: #fdbb2d;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--success);
+        }
+        
+        .progress-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            height: 12px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .website-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .website-card {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+        
+        .website-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .website-header {
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .website-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .website-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .website-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .website-url {
+            color: #fdbb2d;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            word-break: break-all;
+        }
+        
+        .website-frame-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        .website-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+        
+        .website-frame-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 15px;
+            transition: opacity 0.3s ease;
+        }
+        
+        .website-frame-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .website-stats {
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .active {
+            background-color: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        .inactive {
+            background-color: #e74c3c;
+        }
+        
+        .loading {
+            background-color: #f39c12;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .debug-panel {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            font-family: monospace;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .debug-panel h3 {
+            margin-bottom: 15px;
+            color: #fdbb2d;
+            font-size: 1.4rem;
+        }
+        
+        .debug-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .debug-item {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .session-info {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .traffic-animation {
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            margin: 20px 0;
+            animation: trafficFlow 2s infinite linear;
+        }
+        
+        @keyframes trafficFlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .floating-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(46, 204, 113, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .play-button {
+            padding: 12px 24px;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .play-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            border: 2px dashed rgba(255,255,255,0.2);
+        }
+        
+        .empty-state h3 {
+            color: #fdbb2d;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .website-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .website-card {
+                height: 350px;
+            }
+            
+            .file-upload {
+                flex-direction: column;
+            }
+            
+            .file-input {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 SEO Traffic Simulátor</h1>
+            <p class="subtitle">CSV Import - Weboldalak betöltése iframe-ekben YouTube Link Editor kompatibilis formátumban</p>
+        </header>
+        
+        <div class="session-info">
+            <h2>📁 CSV Fájl Import</h2>
+            <p>Tölts fel CSV fájlt webcímekkel - ugyanaz a formátum, mint a YouTube Link Editorban</p>
+            <div class="traffic-animation"></div>
+        </div>
+        
+        <div class="import-section">
+            <h3>📤 CSV Fájl Feltöltés</h3>
+            <div class="file-upload">
+                <input type="file" id="csvFile" accept=".csv" class="file-input" 
+                       placeholder="Válassz CSV fájlt...">
+                <button onclick="importCSV()">
+                    <span>📁</span> CSV Import
+                </button>
+                <button onclick="downloadTemplate()">
+                    <span>📥</span> CSV Sablon
+                </button>
+            </div>
+            
+            <div class="csv-preview" id="csvPreview" style="display: none;">
+                <h4>🔍 CSV Előnézet (első 5 sor):</h4>
+                <table id="previewTable">
+                    <thead>
+                        <tr>
+                            <th>URL</th>
+                            <th>Név</th>
+                            <th>Kategória</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="startTrafficGeneration()">
+                <span>🚀</span> Forgalom Generálás
+            </button>
+            <button onclick="loadAllWebsites()">
+                <span>🌐</span> Összes Betöltése
+            </button>
+            <button onclick="stopTrafficGeneration()">
+                <span>⏹️</span> Generálás Leállítása
+            </button>
+            <button onclick="resetStats()">
+                <span>🔄</span> Statisztikák Reset
+            </button>
+        </div>
+        
+        <div class="stats-panel">
+            <div class="stat-card">
+                <h3>📈 Betöltött Oldalak</h3>
+                <div class="stat-value" id="loadedCount">0</div>
+                <p>Eddig betöltött weboldalak száma</p>
+                <div class="progress-container">
+                    <div class="progress-bar" id="loadedProgress" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>⏱️ Átlagos Idő</h3>
+                <div class="stat-value" id="avgTime">0s</div>
+                <p>Átlagos idő egy oldalon</p>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: 45%"></div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>🌐 Aktív Látogatók</h3>
+                <div class="stat-value" id="activeVisitors">1</div>
+                <p>Jelenleg aktív felhasználók</p>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: 100%"></div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>📊 SEO Hatékonyság</h3>
+                <div class="stat-value" id="seoScore">0%</div>
+                <p>Becsült rangnövekedés</p>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="website-grid" id="websiteGrid">
+            <div class="empty-state" id="emptyState">
+                <h3>📁 Nincsenek weboldalak</h3>
+                <p>Először tölts fel egy CSV fájlt webcímekkel</p>
+                <p style="opacity: 0.7; margin-top: 10px;">Támogatott formátum: URL, Név, Kategória</p>
+            </div>
+        </div>
+        
+        <div class="debug-panel">
+            <h3>🔍 SEO Részletek & Diagnosztika</h3>
+            <div class="debug-info">
+                <div class="debug-item" id="debugUserAgent">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0</div>
+                <div class="debug-item" id="debugIP">IP Cím: 104.28.235.68 (Ashburn, Virginia)</div>
+                <div class="debug-item" id="debugSession">Munkamenet: 00:00:00 | Oldalak: 0/0</div>
+                <div class="debug-item" id="debugStatus">Állapot: Inaktív - Várakozás CSV importra</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="floating-notification" id="notification">
+        CSV fájl sikeresen importálva!
+    </div>
+
+    <script>
+        // Weboldal adatbázis - kezdetben üres
+        let WEBSITES = [];
+        let currentWebsites = [];
+
+        // Állapotváltozók
+        let loadedCount = 0;
+        let isRunning = false;
+        let intervalId = null;
+        let startTime = null;
+        let sessionTimer = null;
+        let currentIndex = 0;
+        
+        // DOM elemek
+        const websiteGrid = document.getElementById('websiteGrid');
+        const emptyState = document.getElementById('emptyState');
+        const loadedCountElement = document.getElementById('loadedCount');
+        const loadedProgressElement = document.getElementById('loadedProgress');
+        const avgTimeElement = document.getElementById('avgTime');
+        const activeVisitorsElement = document.getElementById('activeVisitors');
+        const seoScoreElement = document.getElementById('seoScore');
+        const notification = document.getElementById('notification');
+        const csvPreview = document.getElementById('csvPreview');
+        const previewTable = document.getElementById('previewTable').querySelector('tbody');
+        
+        // CSV Import funkció
+        function importCSV() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showNotification('❌ Válassz ki egy CSV fájlt!');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const csvData = e.target.result;
+                    const websites = parseCSV(csvData);
+                    
+                    if (websites.length === 0) {
+                        showNotification('❌ A CSV fájl üres vagy hibás formátumú!');
+                        return;
+                    }
+                    
+                    WEBSITES = websites;
+                    currentWebsites = [...WEBSITES];
+                    renderWebsites();
+                    showPreview(websites);
+                    showNotification(`✅ CSV importálva: ${websites.length} weboldal`);
+                    
+                    document.getElementById('debugStatus').textContent = 
+                        `Állapot: CSV importálva - ${websites.length} weboldal`;
+                        
+                } catch (error) {
+                    showNotification('❌ Hiba a CSV fájl feldolgozásában: ' + error.message);
+                }
+            };
+            
+            reader.onerror = function() {
+                showNotification('❌ Hiba a fájl olvasásában');
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // CSV fájl feldolgozása
+        function parseCSV(csvData) {
+            const lines = csvData.split('\n').filter(line => line.trim() !== '');
+            const websites = [];
+            
+            // Fejléc ellenőrzése (opcionális)
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const hasHeader = headers.some(h => h.includes('url') || h.includes('név') || h.includes('name'));
+            
+            const startLine = hasHeader ? 1 : 0;
+            
+            for (let i = startLine; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                // Egyszerű CSV feldolgozás - vesszővel elválasztott
+                const columns = parseCSVLine(line);
+                
+                if (columns.length >= 1) {
+                    const url = columns[0].trim();
+                    const name = columns[1] ? columns[1].trim() : `Weboldal ${i + 1}`;
+                    const category = columns[2] ? columns[2].trim() : 'Általános';
+                    const description = columns[3] ? columns[3].trim() : `${name} - SEO kísérlet`;
+                    
+                    // URL validálás
+                    if (isValidUrl(url)) {
+                        websites.push({
+                            name: name,
+                            url: url,
+                            category: category,
+                            description: description,
+                            demoUrl: url // Valódi URL-t használunk
+                        });
+                    }
+                }
+            }
+            
+            return websites;
+        }
+        
+        // CSV sor feldolgozása - kezeli a vesszőket idézőjelek között
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current);
+            return result;
+        }
+        
+        // URL validálás
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+        
+        // CSV előnézet megjelenítése
+        function showPreview(websites) {
+            const previewCount = Math.min(5, websites.length);
+            previewTable.innerHTML = '';
+            
+            for (let i = 0; i < previewCount; i++) {
+                const website = websites[i];
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${website.url}</td>
+                    <td>${website.name}</td>
+                    <td>${website.category}</td>
+                `;
+                
+                previewTable.appendChild(row);
+            }
+            
+            csvPreview.style.display = 'block';
+        }
+        
+        // CSV sablon letöltése
+        function downloadTemplate() {
+            const template = `URL,Név,Kategória,Leírás
+https://example.com,Example Főoldal,Általános,Példa weboldal főoldala
+https://example.com/blog,Blog Oldal,Blog,Cikkek és bejegyzések
+https://example.com/contact,Kapcsolat,Információ,Kapcsolatfelvételi űrlap
+https://example.com/products,Termékek,E-kereskedelm,Termék katalógus
+https://example.com/about,Rólunk,Információ,Céginformációk`;
+            
+            const blob = new Blob([template], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            a.href = url;
+            a.download = 'seo_traffic_template.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('📥 CSV sablon letöltve!');
+        }
+        
+        // Weboldalak renderelése iframe-ekkel
+        function renderWebsites() {
+            if (WEBSITES.length === 0) {
+                emptyState.style.display = 'block';
+                websiteGrid.innerHTML = '';
+                websiteGrid.appendChild(emptyState);
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            websiteGrid.innerHTML = '';
+            
+            WEBSITES.forEach((website, index) => {
+                const websiteCard = document.createElement('div');
+                websiteCard.className = 'website-card';
+                websiteCard.innerHTML = `
+                    <div class="website-header">
+                        <div class="website-icon">${website.name.charAt(0)}</div>
+                        <div class="website-info">
+                            <div class="website-title">${website.name}</div>
+                            <div class="website-url">${website.url}</div>
+                        </div>
+                    </div>
+                    <div class="website-frame-container">
+                        <iframe class="website-frame" 
+                                data-website-id="${index}"
+                                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                                loading="lazy">
+                        </iframe>
+                        <div class="website-frame-overlay" id="overlay-${index}">
+                            <div style="text-align: center;">
+                                <div style="font-size: 3rem; margin-bottom: 10px;">🌐</div>
+                                <div style="font-weight: bold; margin-bottom: 10px;">${website.name}</div>
+                                <div style="opacity: 0.8; margin-bottom: 20px;">${website.description}</div>
+                                <button class="play-button" onclick="loadWebsite(${index})">
+                                    ▶️ Oldal Betöltése
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="website-stats">
+                        <span><span class="status-indicator inactive" id="status-${index}"></span> Inaktív</span>
+                        <span>Megtekintve: <span id="visitCount-${index}">0</span>x</span>
+                        <span>Átlag idő: <span id="timeCount-${index}">0</span>s</span>
+                    </div>
+                `;
+                
+                websiteGrid.appendChild(websiteCard);
+            });
+        }
+        
+        // Egy weboldal betöltése
+        function loadWebsite(index) {
+            if (index >= WEBSITES.length) return;
+            
+            const website = WEBSITES[index];
+            const iframe = document.querySelector(`iframe[data-website-id="${index}"]`);
+            const overlay = document.getElementById(`overlay-${index}`);
+            const statusIndicator = document.getElementById(`status-${index}`);
+            
+            // Státusz frissítése
+            statusIndicator.className = 'status-indicator loading';
+            statusIndicator.parentElement.innerHTML = `<span class="status-indicator loading"></span> Betöltés...`;
+            
+            // Iframe forrás beállítása
+            iframe.src = website.url;
+            
+            // Overlay elrejtése késleltetéssel
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                statusIndicator.className = 'status-indicator active';
+                statusIndicator.parentElement.innerHTML = `<span class="status-indicator active"></span> Aktív`;
+                
+                // Statisztika frissítése
+                loadedCount++;
+                loadedCountElement.textContent = loadedCount;
+                const progress = WEBSITES.length > 0 ? (loadedCount / WEBSITES.length) * 100 : 0;
+                loadedProgressElement.style.width = `${Math.min(100, progress)}%`;
+                
+                // Látogatás számláló frissítése
+                const visitCountElement = document.getElementById(`visitCount-${index}`);
+                const currentVisits = parseInt(visitCountElement.textContent) + 1;
+                visitCountElement.textContent = currentVisits;
+                
+                // Időzítő indítása az átlagos időhöz
+                startTimeTracking(index);
+                
+                // SEO pontszám frissítése
+                updateSeoScore();
+                
+                // Értesítés megjelenítése
+                showNotification(`🌐 ${website.name} betöltve`);
+                
+                // Debug információk frissítése
+                updateDebugInfo();
+            }, 1500);
+        }
+        
+        // Idő követés indítása egy weboldalhoz
+        function startTimeTracking(index) {
+            const startTime = new Date();
+            const timeCountElement = document.getElementById(`timeCount-${index}`);
+            
+            const timeInterval = setInterval(() => {
+                const currentTime = new Date();
+                const seconds = Math.floor((currentTime - startTime) / 1000);
+                timeCountElement.textContent = seconds;
+            }, 1000);
+            
+            // 30 másodperc után automatikus leállítás
+            setTimeout(() => {
+                clearInterval(timeInterval);
+                const statusIndicator = document.getElementById(`status-${index}`);
+                statusIndicator.className = 'status-indicator inactive';
+                statusIndicator.parentElement.innerHTML = `<span class="status-indicator inactive"></span> Inaktív`;
+            }, 30000);
+        }
+        
+        // Forgalom generálás indítása
+        function startTrafficGeneration() {
+            if (WEBSITES.length === 0) {
+                showNotification('❌ Először importálj CSV fájlt!');
+                return;
+            }
+            
+            if (isRunning) return;
+            
+            isRunning = true;
+            startTime = new Date();
+            document.getElementById('debugStatus').textContent = 
+                `Állapot: Aktív - ${WEBSITES.length} weboldal automatikus betöltése`;
+            
+            // Automatikus betöltés indítása
+            intervalId = setInterval(loadNextWebsite, 8000);
+            
+            // Első weboldal azonnali betöltése
+            loadNextWebsite();
+            
+            showNotification('🚀 Automatikus betöltés elindítva!');
+        }
+        
+        // Következő weboldal betöltése
+        function loadNextWebsite() {
+            if (currentIndex >= WEBSITES.length) {
+                currentIndex = 0;
+            }
+            
+            loadWebsite(currentIndex);
+            currentIndex++;
+        }
+        
+        // Összes weboldal betöltése
+        function loadAllWebsites() {
+            if (WEBSITES.length === 0) {
+                showNotification('❌ Először importálj CSV fájlt!');
+                return;
+            }
+            
+            WEBSITES.forEach((website, index) => {
+                setTimeout(() => {
+                    loadWebsite(index);
+                }, index * 2000);
+            });
+            
+            showNotification('🌐 Összes weboldal betöltése folyamatban...');
+        }
+        
+        // Forgalom generálás leállítása
+        function stopTrafficGeneration() {
+            if (!isRunning) return;
+            
+            isRunning = false;
+            clearInterval(intervalId);
+            document.getElementById('debugStatus').textContent = 'Állapot: Inaktív - Generálás leállítva';
+            
+            showNotification('⏹️ Automatikus betöltés leállítva');
+        }
+        
+        // Statisztikák visszaállítása
+        function resetStats() {
+            loadedCount = 0;
+            currentIndex = 0;
+            loadedCountElement.textContent = '0';
+            loadedProgressElement.style.width = '0%';
+            seoScoreElement.textContent = '0%';
+            
+            // Látogatás számlálók visszaállítása
+            WEBSITES.forEach((_, index) => {
+                const visitCountElement = document.getElementById(`visitCount-${index}`);
+                const timeCountElement = document.getElementById(`timeCount-${index}`);
+                if (visitCountElement) visitCountElement.textContent = '0';
+                if (timeCountElement) timeCountElement.textContent = '0';
+                
+                // Iframe-ek visszaállítása
+                const iframe = document.querySelector(`iframe[data-website-id="${index}"]`);
+                const overlay = document.getElementById(`overlay-${index}`);
+                const statusIndicator = document.getElementById(`status-${index}`);
+                
+                if (iframe) iframe.src = '';
+                if (overlay) overlay.classList.remove('hidden');
+                if (statusIndicator) {
+                    statusIndicator.className = 'status-indicator inactive';
+                    statusIndicator.parentElement.innerHTML = `<span class="status-indicator inactive"></span> Inaktív`;
+                }
+            });
+            
+            showNotification('🔄 Statisztikák visszaállítva');
+        }
+        
+        // SEO pontszám frissítése
+        function updateSeoScore() {
+            const score = WEBSITES.length > 0 ? 
+                Math.min(100, Math.floor((loadedCount / WEBSITES.length) * 100)) : 0;
+            seoScoreElement.textContent = `${score}%`;
+            
+            // Progress bar frissítése
+            document.querySelectorAll('.progress-bar')[3].style.width = `${score}%`;
+        }
+        
+        // Munkamenet időzítő
+        function startSessionTimer() {
+            sessionTimer = setInterval(() => {
+                if (startTime) {
+                    const now = new Date();
+                    const diff = now - startTime;
+                    const hours = Math.floor(diff / 3600000);
+                    const minutes = Math.floor((diff % 3600000) / 60000);
+                    const seconds = Math.floor((diff % 60000) / 1000);
+                    
+                    document.getElementById('debugSession').textContent = 
+                        `Munkamenet: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} | Oldalak: ${loadedCount}/${WEBSITES.length}`;
+                    
+                    // Átlagos idő frissítése
+                    if (loadedCount > 0) {
+                        const avgTime = Math.floor(diff / loadedCount / 1000);
+                        avgTimeElement.textContent = `${avgTime}s`;
+                    }
+                }
+            }, 1000);
+        }
+        
+        // Debug információk frissítése
+        function updateDebugInfo() {
+            document.getElementById('debugUserAgent').textContent = 
+                `User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0`;
+            
+            document.getElementById('debugIP').textContent = 
+                `IP Cím: 104.28.235.${Math.floor(Math.random() * 100)} (Ashburn, Virginia)`;
+            
+            document.getElementById('debugSession').textContent = 
+                `Munkamenet: 00:00:00 | Oldalak: ${loadedCount}/${WEBSITES.length}`;
+            
+            document.getElementById('debugStatus').textContent = 
+                WEBSITES.length === 0 ? 
+                'Állapot: Inaktív - Várakozás CSV importra' :
+                `Állapot: ${isRunning ? 'Aktív' : 'Inaktív'} - ${WEBSITES.length} weboldal`;
+        }
+        
+        // Értesítés megjelenítése
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Oldal betöltésekor inicializálás
+        window.addEventListener('load', function() {
+            updateDebugInfo();
+            startSessionTimer();
+        });
+    </script>
+</body>
+</html>
